@@ -42,56 +42,92 @@ const ItemCardList = ({
   <SecondaryCard icon={icon} title={title}>
     {data && data.length > 0 ? (
       <div
-        className={`grid ${showSingleColumn ? 'grid-cols-1' : 'gap-4 gap-y-0 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}
+        className={`grid ${
+          showSingleColumn
+            ? 'grid-cols-1'
+            : 'gap-4 gap-y-0 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+        }`}
       >
-        {data.map((item, index) => (
-          <div
-            key={item.objectID || `${item.repositoryName}-${item.title || item.name}-${item.url}`}
-            className="mb-4 w-full rounded-lg bg-gray-200 p-4 dark:bg-gray-700"
-          >
-            <div className="flex w-full flex-col justify-between">
-              <div className="flex w-full items-center">
-                {showAvatar && (
-                  <Tooltip
-                    closeDelay={100}
-                    content={item?.author?.name || item?.author?.login}
-                    id={`avatar-tooltip-${index}`}
-                    delay={100}
-                    placement="bottom"
-                    showArrow
-                  >
-                    <Link
-                      className="shrink-0 text-blue-400 hover:underline"
-                      href={`/members/${item?.author?.login}`}
+        {data.map((item, index) => {
+          const authorLogin =
+            typeof item?.author?.login === 'string' && item.author.login.trim().length > 0
+              ? item.author.login.trim()
+              : null
+
+          const avatarSrc =
+            typeof item?.author?.avatarUrl === 'string' &&
+            item.author.avatarUrl.trim().length > 0
+              ? item.author.avatarUrl.trim()
+              : null
+
+          const externalUrl =
+            typeof item?.url === 'string' && item.url.trim().length > 0
+              ? item.url.trim()
+              : null
+
+          const authorLabel = item?.author?.name || item?.author?.login || 'Author'
+
+          return (
+            <div
+              key={item.objectID || `${item.repositoryName}-${item.title || item.name}-${item.url}`}
+              className="mb-4 w-full rounded-lg bg-gray-200 p-4 dark:bg-gray-700"
+            >
+              <div className="flex w-full flex-col justify-between">
+                <div className="flex w-full items-center">
+                  {showAvatar && authorLogin && (
+                    <Tooltip
+                      closeDelay={100}
+                      content={item?.author?.name || item?.author?.login}
+                      id={`avatar-tooltip-${index}`}
+                      delay={100}
+                      placement="bottom"
+                      showArrow
                     >
-                      <Image
-                        height={24}
-                        width={24}
-                        src={item?.author?.avatarUrl}
-                        alt={
-                          item.author && (item.author.name || item.author.login)
-                            ? `${item.author.name || item.author.login}'s avatar`
-                            : "Author's avatar"
-                        }
-                        className="mr-2 rounded-full"
-                      />
-                    </Link>
-                  </Tooltip>
-                )}
-                <h3 className="min-w-0 flex-1 overflow-hidden font-semibold text-ellipsis whitespace-nowrap">
-                  <Link
-                    className="text-blue-400 hover:underline"
-                    href={item?.url || ''}
-                    target="_blank"
-                  >
-                    <TruncatedText text={item.title || item.name} />
-                  </Link>
-                </h3>
+                      <Link
+                        className="shrink-0 text-blue-400 hover:underline"
+                        href={`/members/${authorLogin}`}
+                      >
+                        {avatarSrc ? (
+                          <Image
+                            height={24}
+                            width={24}
+                            src={avatarSrc}
+                            alt={`${authorLabel}'s avatar`}
+                            className="mr-2 rounded-full"
+                          />
+                        ) : (
+                          // fallback placeholder to preserve layout
+                          <div
+                            className="mr-2 h-6 w-6 rounded-full bg-gray-400 dark:bg-gray-600"
+                            aria-label={`${authorLabel} avatar placeholder`}
+                          />
+                        )}
+                      </Link>
+                    </Tooltip>
+                  )}
+
+                  <h3 className="min-w-0 flex-1 overflow-hidden font-semibold text-ellipsis whitespace-nowrap">
+                    {externalUrl ? (
+                      <Link
+                        className="text-blue-400 hover:underline"
+                        href={externalUrl}
+                        target="_blank"
+                      >
+                        <TruncatedText text={item.title || item.name} />
+                      </Link>
+                    ) : (
+                      <span className="text-gray-300 dark:text-gray-400">
+                        <TruncatedText text={item.title || item.name} />
+                      </span>
+                    )}
+                  </h3>
+                </div>
+
+                <div className="ml-0.5 w-full">{renderDetails(item)}</div>
               </div>
-              <div className="ml-0.5 w-full">{renderDetails(item)}</div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     ) : (
       <p>Nothing to display.</p>
